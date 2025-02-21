@@ -7,13 +7,14 @@
     golangci-lint
     gopls
     delve
+    nats-server
   ];
 
   pre-commit = {
     hooks = {
       golangci-lint = {
         enable = true;
-        entry = "${pkgs.golangci-lint}/bin/golangci-lint run";
+        entry = "sh -c 'cd common && ${pkgs.golangci-lint}/bin/golangci-lint run && cd ../services/ingestion && ${pkgs.golangci-lint}/bin/golangci-lint run'";
         files = "\\.go$";
       };
 
@@ -25,13 +26,13 @@
 
       go-vet = {
         enable = true;
-        entry = "go vet";
+        entry = "sh -c 'cd common && go vet ./... && cd ../services/ingestion && go vet ./...'";
         files = "\\.go$";
       };
 
       go-mod-tidy = {
         enable = true;
-        entry = "go mod tidy";
+        entry = "sh -c 'cd common && go mod tidy && cd ../services/ingestion && go mod tidy'";
         files = "go\\.mod$";
       };
     };
