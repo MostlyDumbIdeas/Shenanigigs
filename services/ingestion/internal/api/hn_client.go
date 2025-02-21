@@ -38,15 +38,21 @@ func (c *jobSourceClient) SearchHiringThreads(ctx context.Context) (models.IntSl
 	defer span.End()
 
 	timeThreshold := time.Now().AddDate(0, -6, 0).Unix()
+	span.SetAttributes(telemetry.Int("search.time_threshold", int(timeThreshold)))
 	cacheKey := fmt.Sprintf("hn:search:hiring:%d", timeThreshold)
 
 	var cachedIDs models.IntSlice
 	err := c.cache.Get(ctx, cacheKey, &cachedIDs)
 	if err == nil {
+		span.SetAttributes(telemetry.String("cache.result", "hit"))
 		c.logger.Debug("cache hit for hiring threads search")
 		return cachedIDs, nil
 	} else if err != cache.ErrNotFound {
+		span.SetAttributes(telemetry.String("cache.result", "error"))
+		span.RecordError(err)
 		c.logger.Warn("cache error for hiring threads search", zap.Error(err))
+	} else {
+		span.SetAttributes(telemetry.String("cache.result", "miss"))
 	}
 
 	url := fmt.Sprintf("%s/search?tags=story,author_whoishiring&query=Ask+HN:+Who+is+hiring?&numericFilters=created_at_i>%d",
@@ -142,15 +148,24 @@ func NewJobSourceClient(logger *zap.Logger, config *config.Config) JobSourceClie
 }
 
 func (c *jobSourceClient) GetItem(ctx context.Context, id int) (*models.SourcePost, error) {
+	ctx, span := tracer.Start(ctx, "GetItem")
+	defer span.End()
+	span.SetAttributes(telemetry.Int("hn.item.id", id))
+
 	cacheKey := fmt.Sprintf("hn:item:%d", id)
 	var cachedPost models.SourcePost
 
 	err := c.cache.Get(ctx, cacheKey, &cachedPost)
 	if err == nil {
+		span.SetAttributes(telemetry.String("cache.result", "hit"))
 		c.logger.Debug("cache hit", zap.Int("id", id))
 		return &cachedPost, nil
 	} else if err != cache.ErrNotFound {
+		span.SetAttributes(telemetry.String("cache.result", "error"))
+		span.RecordError(err)
 		c.logger.Warn("cache error", zap.Error(err))
+	} else {
+		span.SetAttributes(telemetry.String("cache.result", "miss"))
 	}
 
 	url := fmt.Sprintf("%s/item/%d.json", c.config.HNAPIBaseURL, id)
@@ -202,8 +217,12 @@ func (c *jobSourceClient) GetItem(ctx context.Context, id int) (*models.SourcePo
 }
 
 func (c *jobSourceClient) GetTopStories(ctx context.Context) (models.IntSlice, error) {
+	ctx, span := tracer.Start(ctx, "GetTopStories")
+	defer span.End()
+
 	url := fmt.Sprintf("%s/topstories.json", c.config.HNAPIBaseURL)
 	c.logger.Debug("fetching top stories", zap.String("url", url))
+	span.SetAttributes(telemetry.String("http.url", url))
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
