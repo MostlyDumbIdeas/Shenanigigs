@@ -10,6 +10,8 @@
     nats-server
   ];
 
+  services.redis.enable = true;
+
   pre-commit = {
     hooks = {
       golangci-lint = {

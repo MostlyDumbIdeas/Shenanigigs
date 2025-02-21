@@ -17,6 +17,11 @@ type Config struct {
 
 	NATSURL         string
 	NATSConnTimeout time.Duration
+
+	RedisAddr     string
+	RedisPassword string
+	RedisDB       int
+	CacheTTL      time.Duration
 }
 
 func LoadConfig() (*Config, error) {
@@ -29,6 +34,11 @@ func LoadConfig() (*Config, error) {
 		RetryDelay:         getEnvDuration("RETRY_DELAY", 30*time.Second),
 		NATSURL:            getEnvString("NATS_URL", "nats://localhost:4222"),
 		NATSConnTimeout:    getEnvDuration("NATS_CONN_TIMEOUT", 10*time.Second),
+
+		RedisAddr:     getEnvString("REDIS_ADDR", "localhost:6379"),
+		RedisPassword: getEnvString("REDIS_PASSWORD", ""),
+		RedisDB:       getEnvInt("REDIS_DB", 0),
+		CacheTTL:      getEnvDuration("CACHE_TTL", 24*time.Hour),
 	}
 
 	return config, nil
