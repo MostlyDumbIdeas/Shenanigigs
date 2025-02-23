@@ -157,7 +157,7 @@ func (s *JobScheduler) processComment(ctx context.Context, commentID int) error 
 
 	jobPosting := comment.ToJobPosting()
 	s.logger.Debug("processing job posting",
-		zap.Int("comment_id", jobPosting.ID),
+		zap.String("comment_id", jobPosting.ID),
 		zap.Time("posted_at", jobPosting.PostedAt))
 
 	if err := s.publisher.PublishJobPosting(ctx, jobPosting); err != nil {

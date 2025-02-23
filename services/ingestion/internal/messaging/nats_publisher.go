@@ -17,7 +17,7 @@ import (
 var tracer = telemetry.GetTracer("shenanigigs/ingestion/messaging")
 
 const (
-	JobPostingsSubject = "job_postings"
+	JobPostingsSubject = "jobs.new"
 )
 
 type Publisher interface {
@@ -66,13 +66,13 @@ func (p *natsPublisher) PublishJobPosting(ctx context.Context, posting *models.J
 	if err := p.conn.Publish(JobPostingsSubject, data); err != nil {
 		span.RecordError(err)
 		p.logger.Error("failed to publish job posting",
-			zap.Int("id", posting.ID),
+			zap.String("id", posting.ID),
 			zap.Error(err))
 		return errors.Internal("publishing to NATS", err)
 	}
 
 	p.logger.Debug("published job posting",
-		zap.Int("id", posting.ID),
+		zap.String("id", posting.ID),
 		zap.String("subject", JobPostingsSubject))
 	return nil
 }

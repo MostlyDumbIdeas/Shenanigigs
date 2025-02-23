@@ -6,7 +6,7 @@ import (
 )
 
 type JobPosting struct {
-	ID          int       `json:"id"`
+	ID          string    `json:"id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	PostedAt    time.Time `json:"posted_at"`

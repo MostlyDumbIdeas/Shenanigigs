@@ -11,6 +11,7 @@
   ];
 
   services.redis.enable = true;
+  services.clickhouse.enable = true;
 
   pre-commit = {
     hooks = {

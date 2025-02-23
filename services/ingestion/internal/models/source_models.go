@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"strconv"
 	"time"
 )
 
@@ -40,7 +41,7 @@ func (p SourcePost) UnmarshalBinary(data []byte) error {
 
 func (p *SourcePost) ToJobPosting() *JobPosting {
 	return &JobPosting{
-		ID:          p.ID,
+		ID:          strconv.Itoa(p.ID),
 		Title:       p.Title,
 		Description: p.Text,
 		PostedAt:    time.Unix(p.Time, 0),
